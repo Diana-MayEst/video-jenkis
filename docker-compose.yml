@@ -1,0 +1,45 @@
+version: '3.7'
+
+services:
+  # Servicio de Jenkins
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    restart: unless-stopped
+
+  # Servicio de Apache (servidor web)
+  apache:
+    image: httpd:latest
+    container_name: apache
+    ports:
+      - "8081:80"
+    volumes:
+      - ./app:/usr/local/apache2/htdocs/
+    depends_on:
+      - db
+    restart: always
+
+  # Servicio de la base de datos (MySQL)
+  db:
+    image: mysql:5.7
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: example_db
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+
+volumes:
+  jenkins_home:
+    driver: local
+  db_data:
+    driver: local
+
